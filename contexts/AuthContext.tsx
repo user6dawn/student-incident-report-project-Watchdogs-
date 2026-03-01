@@ -74,8 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        (async () => {
+      (event, session) => {
+        // When auth state changes (login/logout), mark as loading
+        setLoading(true)
+
+        ;(async () => {
           setUser(session?.user ?? null)
 
           if (session?.user) {
