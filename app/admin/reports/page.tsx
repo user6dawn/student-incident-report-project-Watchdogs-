@@ -9,14 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ArrowLeft, Eye, Search, Filter, ArrowUpDown } from 'lucide-react'
+import { ArrowLeft, Eye, Search, Filter, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationPrevious,
-  PaginationNext,
 } from '@/components/ui/pagination'
 import { toast } from 'sonner'
 
@@ -249,26 +247,42 @@ export default function AdminReportsPage() {
                   <Pagination className="mt-2">
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1 pl-2.5"
                           disabled={page === 1 || loading}
                           onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                        />
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Previous
+                        </Button>
                       </PaginationItem>
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                         <PaginationItem key={p}>
                           <PaginationLink
                             isActive={p === page}
-                            onClick={() => setPage(p)}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              setPage(p)
+                            }}
+                            href="#"
                           >
                             {p}
                           </PaginationLink>
                         </PaginationItem>
                       ))}
                       <PaginationItem>
-                        <PaginationNext
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1 pr-2.5"
                           disabled={page === totalPages || loading || totalPages === 0}
                           onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                        />
+                        >
+                          Next
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
