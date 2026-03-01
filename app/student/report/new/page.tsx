@@ -189,11 +189,35 @@ export default function NewReportPage() {
         address: reportData.location
       })
 
-      const { error } = await supabase
+      const { data: insertedReport, error } = await supabase
         .from('reports')
         .insert(reportData)
+        .select('id')
+        .single()
 
       if (error) throw error
+
+      // Notify via Brevo email (await so request completes before redirect)
+      try {
+        const res = await fetch('/api/notify-new-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: insertedReport?.id,
+            type: reportData.type,
+            date: reportData.date,
+            location: reportData.location,
+            description: reportData.description,
+            anonymous: reportData.anonymous,
+          }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          console.error('Notify API failed:', res.status, err)
+        }
+      } catch (e) {
+        console.error('Failed to send notification email:', e)
+      }
 
       toast.success('Report submitted successfully!')
       router.push('/student/reports')
