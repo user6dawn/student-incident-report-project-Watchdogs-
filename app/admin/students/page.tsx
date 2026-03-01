@@ -358,6 +358,15 @@ export default function AdminStudentsPage() {
               Update student information and role
             </DialogDescription>
           </DialogHeader>
+          {editingStudent?.image_url && (
+            <div className="flex justify-center pb-2">
+              <img
+                src={editingStudent.image_url}
+                alt={editingStudent.name}
+                className="h-24 w-24 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+              />
+            </div>
+          )}
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
