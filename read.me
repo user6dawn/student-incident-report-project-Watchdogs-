@@ -1,0 +1,101 @@
+# Core Functions Reference
+
+This document summarizes the core functions/components in the workspace with short descriptions, 
+parameters, return values and important side-effects. Click the links to open the implementation.
+
+## Maps
+- [`ReportsMap`](components/ReportsMap.tsx) — [components/ReportsMap.tsx](components/ReportsMap.tsx)  
+  Renders a Leaflet map with markers for multiple reports.
+  - Parameters: `reports: Report[]`, `height?: string`, `basePath?: string`
+  - Side-effects: creates custom marker icons (`createCustomIcon`) and logs map load state.
+  - Notes: filters reports with numeric `latitude`/`longitude` and computes center from locations.
+
+- [`createCustomIcon`](components/ReportsMap.tsx) — [components/ReportsMap.tsx](components/ReportsMap.tsx)  
+  Helper that returns a Leaflet `divIcon` (client-only). Returns `undefined` server-side.
+
+- [`MapDisplay`](components/MapDisplay.tsx) — [components/MapDisplay.tsx](components/MapDisplay.tsx)  
+  Single-location map with a popup. Shows loading placeholder until client-side mount.
+  - Parameters: `latitude: number`, `longitude: number`, `address?: string`, `height?: string`
+  - Behavior: Renders `MapContainer`, `TileLayer`, `Marker`, `Popup`.
+
+- [`MapDisplayWrapper`](components/MapDisplayWrapper.tsx) — [components/MapDisplayWrapper.tsx](components/MapDisplayWrapper.tsx)  
+  Client/SSR-safe wrapper around `MapDisplay` to avoid server-side Leaflet issues.
+
+- [`MapLocationPicker`](components/MapLocationPicker.tsx) — [components/MapLocationPicker.tsx](components/MapLocationPicker.tsx)  
+  Interactive picker used on report creation. Supports clicking map and current location detection.
+  - Parameters: `onLocationSelect`, `initialLocation`, `initialAddress`
+
+- [`MapLocationPickerWrapper`](components/MapLocationPickerWrapper.tsx) — [components/MapLocationPickerWrapper.tsx](components/MapLocationPickerWrapper.tsx)  
+  Wrapper that ensures the picker only mounts client-side.
+
+## Toasts & Notifications
+- [`useToast`](hooks/use-toast.ts) — [hooks/use-toast.ts](hooks/use-toast.ts)  
+  Custom toast hook (inspired by `react-hot-toast`).
+  - Returns: `{ toasts, toast, dismiss }`
+  - Behavior: stores shared in-memory toasts, registers listeners, exposes `toast` factory and `dismiss`.
+
+- [`toast`](hooks/use-toast.ts) — [hooks/use-toast.ts](hooks/use-toast.ts)  
+  Factory to create a toast programmatically. Returns `{ id, dismiss, update }`.
+  - Side-effects: dispatches ADD_TOAST, UPDATE_TOAST, DISMISS_TOAST actions and auto-removal handlers.
+
+- [`Toaster`](components/ui/toaster.tsx) — [components/ui/toaster.tsx](components/ui/toaster.tsx)  
+  Renders toasts from `useToast` using the UI toast primitives.
+
+- [`Toaster` (Sonner)](components/ui/sonner.tsx) — [components/ui/sonner.tsx](components/ui/sonner.tsx)  
+  Sonner-based global toaster component that uses theme context. Alternative to the built-in toast system.
+
+- UI toast primitives in [`components/ui/toast.tsx`](components/ui/toast.tsx) — [components/ui/toast.tsx](components/ui/toast.tsx)  
+  Low-level Radix/primitive components (Toast, ToastTitle, ToastDescription, ToastViewport, etc.).
+
+## Authentication & Supabase
+- [`supabase`](lib/supabase.ts) — [lib/supabase.ts](lib/supabase.ts)  
+  Supabase client instance created from env vars. Exports `Report` and `Student` type definitions.
+  - Side-effects: validates env var formats and throws if missing.
+
+- [`signIn`](lib/auth.ts) — [lib/auth.ts](lib/auth.ts)  
+  Calls `supabase.auth.signInWithPassword` (or equivalent) to authenticate a user.
+  - Parameters: `email: string`, `password: string`
+  - Throws on auth error.
+
+- [`signUp`](lib/auth.ts) — [lib/auth.ts](lib/auth.ts)  
+  Creates an auth user, uploads optional profile image to storage, inserts student profile row.
+  - Parameters: `email`, `password`, `name`, `department?`, `imageFile?`
+  - Side-effects: uploads to `report-photos` bucket and creates `students` row.
+
+- [`signOut`](lib/auth.ts) — [lib/auth.ts](lib/auth.ts)  
+  Signs the current user out via `supabase.auth.signOut()`.
+
+- [`getCurrentUser`](lib/auth.ts) — [lib/auth.ts](lib/auth.ts)  
+  Returns the current Supabase auth user.
+
+- [`getUserProfile`](lib/auth.ts) — [lib/auth.ts](lib/auth.ts)  
+  Fetches the `students` table profile for a given user id; returns `maybeSingle()`.
+
+## Pages / High-level Components (entry points)
+- Student dashboard: [`app/student/dashboard/page.tsx`](app/student/dashboard/page.tsx) — [app/student/dashboard/page.tsx](app/student/dashboard/page.tsx)  
+  Fetches user reports and shows stats and a `ReportsMapWrapper`.
+
+- Admin dashboard: [`app/admin/dashboard/page.tsx`](app/admin/dashboard/page.tsx) — [app/admin/dashboard/page.tsx](app/admin/dashboard/page.tsx)  
+  Fetches all reports (with student relations) and shows `ReportsMapWrapper`.
+
+- Report creation: [`app/student/report/new/page.tsx`](app/student/report/new/page.tsx) — [app/student/report/new/page.tsx](app/student/report/new/page.tsx)  
+  Form handling, photo upload, geolocation detection and reverse geocoding; uses `MapLocationPicker`.
+
+- Report list/detail pages:  
+  - Student list: [`app/student/reports/page.tsx`](app/student/reports/page.tsx) — [app/student/reports/page.tsx](app/student/reports/page.tsx)  
+  - Student detail: [`app/student/reports/[id]/page.tsx`](app/student/reports/[id]/page.tsx) — [app/student/reports/[id]/page.tsx](app/student/reports/[id]/page.tsx)  
+  - Admin list: [`app/admin/reports/page.tsx`](app/admin/reports/page.tsx) — [app/admin/reports/page.tsx](app/admin/reports/page.tsx)  
+  - Admin detail: [`app/admin/reports/[id]/page.tsx`](app/admin/reports/[id]/page.tsx) — [app/admin/reports/[id]/page.tsx](app/admin/reports/[id]/page.tsx)
+
+## UI Primitives (shadcn-style)
+- [`Button`](components/ui/button.tsx) — [components/ui/button.tsx](components/ui/button.tsx)  
+  Styled button with variants via `class-variance-authority`. Exports `buttonVariants`.
+
+- [`Progress`](components/ui/progress.tsx) — [components/ui/progress.tsx](components/ui/progress.tsx)  
+  Radix-based progress bar wrapper that accepts `value`.
+
+- Common components: `Card`, `Dialog`, `Select`, `Table`, `Toast` primitives — see `components/ui/*` (examples: [components/ui/card.tsx](components/ui/card.tsx), [components/ui/dialog.tsx](components/ui/dialog.tsx), [components/ui/select.tsx](components/ui/select.tsx), [components/ui/table.tsx](components/ui/table.tsx))
+
+## Notes & Next Steps
+- This file includes the primary functions/components that coordinate app behavior. For inline documentation (JSDoc) inside source files, add short summary blocks above each exported function/component and include param/return annotations.
+- If you want, I can generate JSDoc blocks and apply them directly to specific files (e.g. add comments above [`ReportsMap`](components/ReportsMap.tsx), [`useToast`](hooks/use-toast.ts), and [`signUp`](lib/auth.ts)). Specify which files to modify.
