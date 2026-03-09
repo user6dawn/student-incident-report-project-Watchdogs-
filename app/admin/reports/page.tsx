@@ -77,7 +77,14 @@ export default function AdminReportsPage() {
       const { data, error, count } = await query
 
       if (error) throw error
-      setReports(data || [])
+      const sanitized: Report[] = (data || []).map((r) => {
+        if (r.anonymous && r.students && typeof r.students === 'object') {
+          // drop the image URL to avoid showing profile photo anywhere
+          r.students.image_url = null
+        }
+        return r
+      })
+      setReports(sanitized)
       setTotalCount(count || 0)
     } catch (error: any) {
       toast.error('Failed to load reports')

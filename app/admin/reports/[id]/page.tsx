@@ -53,6 +53,11 @@ export default function AdminReportDetailPage() {
         return
       }
 
+      // if the report was submitted anonymously, strip any student details for safety
+      if (data.anonymous) {
+        data.students = null
+      }
+
       setReport(data)
     } catch (error: any) {
       toast.error('Failed to load report')
@@ -264,8 +269,8 @@ export default function AdminReportDetailPage() {
                     <CardTitle>Student Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4 ">
-                    {/* student image - always show to admin if available; thumbnail is circular and click expands */}
-                    {student?.image_url && (
+                    {/* student image - hide if report is anonymous */}
+                    {!report.anonymous && student?.image_url && (
                       <div className="flex flex-col items-start gap-2">
                         <Dialog>
                           <DialogTrigger asChild>

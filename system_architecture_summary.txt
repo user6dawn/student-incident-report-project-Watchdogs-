@@ -1,0 +1,110 @@
+Architecture: Web-based SPA with Next.js 13 (App Router)
+Architecture Type: Client-Server with Supabase BaaS
+Frontend Framework: Next.js 13 (App Router under `app/`)
+Backend: Supabase PostgreSQL + Next.js API route (`/api/notify-new-report`)
+Hosting Platform (intended): Vercel (Next.js 13 + App Router structure)
+Frontend-Backend Connection: Supabase JS client SDK (`@supabase/supabase-js`) + Next.js fetch to `/api/notify-new-report`
+Authentication: Supabase Auth (email/password) via `supabase.auth.signInWithPassword` / `signUp`
+Authorization & Roles: `students.role` field (`student` | `admin`) + `ProtectedRoute` checks
+Middleware: Client-side `ProtectedRoute` wrapper + `AuthProvider` context (no custom Next.js middleware file)
+Analytics: Dashboard-style stats and charts in UI (no Vercel Analytics integration in code)
+Map Integration: `react-leaflet` + `leaflet` using OpenStreetMap tiles and Nominatim reverse geocoding
+Environment Variables Used: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `BREVO_API_KEY`, `NOTIFY_NEW_REPORT_EMAIL`, `BREVO_SENDER_EMAIL`, `BREVO_SENDER_NAME`
+Public Deployment: Designed for deployment (e.g. Vercel + Supabase); concrete URL not hard-coded in repo
+
+Frontend Implementation:
+Routing Style: Next.js App Router (`app/layout.tsx`, nested route segments)
+Styling: Tailwind CSS + custom utility classes + shadcn/ui components
+Main Pages:
+- Student Dashboard: `app/student/dashboard/page.tsx`
+- Student Report Submission: `app/student/report/new/page.tsx`
+- Student Reports List: `app/student/reports/page.tsx`
+- Student Report Detail: `app/student/reports/[id]/page.tsx`
+- Student Recently Reported: `app/student/recently-reported/page.tsx`
+- Student Login / Register: `app/student/login/page.tsx` (tabs for login & signup)
+- Admin Dashboard: `app/admin/dashboard/page.tsx`
+- Admin Reports List: `app/admin/reports/page.tsx`
+- Admin Report Detail / Status Management: `app/admin/reports/[id]/page.tsx`
+- Admin Students Management: `app/admin/students/page.tsx`
+- Admin Stats / Analytics: `app/admin/stats/page.tsx`
+- Admin Login: `app/admin/login/page.tsx`
+Form Validation: Required attributes on inputs + imperative checks in handlers (e.g. empty fields, file size < 5MB, valid coordinates)
+Image Upload Handling (Student Profile): Supabase Storage bucket `student-photo` (`students/{userId}-{timestamp}.ext`)
+Image Upload Handling (Incident Report): Supabase Storage bucket `report-photos` (`{studentId}/{timestamp}.ext`)
+Anonymity Toggle: Boolean state `isAnonymous` stored as `anonymous` boolean column in `reports`
+
+Backend / Supabase Implementation:
+Supabase Client Setup: `lib/supabase.ts` using `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+Supabase Project Entities (from code usage):
+- Table `students` (acts as `users` table)
+- Table `reports`
+Email Notifications:
+- Next.js API route `app/api/notify-new-report/route.ts` sends transactional email via Brevo on new report
+- Trigger: client-side `fetch('/api/notify-new-report', {...})` after successful insert into `reports`
+Supabase Functions / RPC: None used in codebase (only standard table operations)
+Row Level Security (RLS): Not configured in code; assumed enabled and configured in Supabase dashboard (not visible here)
+Admin Role Separation:
+- Admins are normal Supabase users with `students.role = 'admin'`
+- Admin login route checks `students.role` and denies access otherwise
+
+Database Implementation (Inferred from Types and Usage):
+Primary Keys:
+- `students.id`: string (Supabase Auth user id, effectively UUID)
+- `reports.id`: string (UUID, inferred from Supabase default)
+Tables:
+- students:
+  - id (PK, UUID from Supabase Auth user.id)
+  - name (text)
+  - email (text)
+  - department (text, nullable)
+  - image_url (text, nullable) – Supabase Storage public URL
+  - role (ENUM text: 'student' | 'admin')
+  - created_at (timestamp)
+- reports:
+  - id (PK, UUID)
+  - student_id (FK → students.id)
+  - anonymous (boolean)
+  - type (text)
+  - date (date or timestamp stored as string in client)
+  - location (text)
+  - latitude (numeric, nullable)
+  - longitude (numeric, nullable)
+  - description (text)
+  - image_url (text, nullable) – Supabase Storage public URL
+  - status (ENUM text: 'new' | 'resolved' | 'unresolved')
+  - created_at (timestamp)
+Relationships:
+- reports.student_id → students.id (FK)
+Anonymity Storage:
+- Boolean `anonymous` flag on `reports`
+- Admin UI hides student identity (name/email) when `anonymous = true`
+Report Status Updates:
+- Admin can update `reports.status` between `new`, `unresolved`, and `resolved` from admin report detail page
+Delete Strategy:
+- Hard delete: `supabase.from('reports').delete().eq('id', ...)` and Supabase Storage `remove` for associated image
+
+Core Functional Features (Implemented Status):
+Student Registration & Login: Yes (Supabase Auth email/password + `students` profile insert)
+Admin Login with Role Check: Yes (`students.role = 'admin'`)
+Anonymous Reporting: Yes (`anonymous` boolean, UI toggle)
+Image Upload: Yes (student photos + incident photos via Supabase Storage)
+Geo-tagging: Yes (Map click / browser geolocation → `latitude`, `longitude`, `location` stored on reports)
+Admin Status Update Workflow: Yes (`new` → `unresolved` → `resolved` via admin actions)
+Email Notification on New Report: Yes (Brevo via `/api/notify-new-report`)
+Student Dashboard & Report History: Yes (student dashboard + list + detail + recently reported)
+Admin Dashboard Filtering / Management:
+- Filtering and search on admin reports table (status filter, text search)
+- Pagination and sorting (`created_at`, `type`, `status`)
+Analytics / Stats:
+- Student dashboard cards + calendar highlight days with reports
+- Admin dashboard cards (total, unresolved, resolved) and stats page (`app/admin/stats/page.tsx`)
+Maps / Location Visualization:
+- Student & admin dashboards use `ReportsMap` with Leaflet + OSM tiles
+- Admin report detail uses `MapDisplayWrapper` for a single incident location
+
+Deployment Environment (Intended Setup):
+App Hosting: Vercel (recommended for Next.js 13 App Router; no explicit alternative in repo)
+Database Hosting: Supabase Cloud (PostgreSQL + Auth + Storage)
+Domain Name: Not specified in code (assumed configured at deployment time)
+Browser Compatibility: Built with modern React/Next.js; tested primarily on modern evergreen browsers (Chrome/Edge/Safari/Firefox)
+Devices Tested (from layout design): Responsive Tailwind UI for Desktop and Mobile (flex/grid + responsive classes)
