@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase, Student } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -26,6 +26,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Student | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const initializedRef = useRef(false)
+  const lastAuthHandledRef = useRef<string | null>(null)
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -54,11 +56,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const initAuth = async () => {
+      if (initializedRef.current) return
+      initializedRef.current = true
       try {
         console.log('🚀 Initializing auth...')
         const { data: { user: currentUser } } = await supabase.auth.getUser()
         console.log('👤 Current user:', currentUser)
         setUser(currentUser)
+        lastAuthHandledRef.current = currentUser?.id ?? null
 
         if (currentUser) {
           await fetchProfile(currentUser.id)
@@ -75,6 +80,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        const currentUserId = session?.user?.id ?? null
+        if (lastAuthHandledRef.current === currentUserId && event === 'SIGNED_IN') {
+          return
+        }
+        lastAuthHandledRef.current = currentUserId
+
         // When auth state changes (login/logout), mark as loading
         setLoading(true)
 

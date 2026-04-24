@@ -18,10 +18,6 @@ export default function Home() {
             <span className="font-bold text-xl text-blue-700">WatchDogs</span>
           </div>
           <div className="flex gap-3">
-            <p className="text-md font-soft pt-2">Welcome to WatchDogs! <b>Let's get started.</b></p>
-            <Button variant="outline" onClick={() => router.push('/student/login')}>
-              Login
-            </Button>
             <Button className="bg-blue-700 hover:bg-blue-800" onClick={() => router.push('/student/login')}>
               Sign Up
             </Button>
