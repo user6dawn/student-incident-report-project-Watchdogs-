@@ -343,7 +343,7 @@ export default function AdminReportDetailPage() {
                   )}
                   {report.status !== 'unresolved' && report.status !== 'resolved' && (
                     <Button
-                    className="w-full bg-grey-100 text-white hover:bg-grey-400 hover:text-white"
+                    className="w-full bg-grey-100 text-black hover:bg-blue-100 hover:text-black"
                       onClick={() => updateStatus('unresolved')}
                       disabled={updating}
                       variant="outline"
@@ -354,6 +354,7 @@ export default function AdminReportDetailPage() {
                   )}
                   {report.status === 'resolved' && (
                     <Button
+                    className="w-full bg-grey-100 text-black hover:bg-blue-100 hover:text-black"
                       onClick={() => updateStatus('unresolved')}
                       disabled={updating}
                       variant="outline"
@@ -378,7 +379,7 @@ export default function AdminReportDetailPage() {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-400">
                           Delete
                         </AlertDialogAction>
                       </AlertDialogFooter>
