@@ -54,17 +54,17 @@ export default function AdminLoginPage() {
           <h1 className="text-3xl font-bold text-blue-600">Admin Dashboard</h1>
         </div>
 
-        <Card className="p-6 bg-blue-600 rounded-lg shadow-lg">
-          <CardHeader >
-            <CardTitle className='text-white'>Administrator Login</CardTitle>
-            <CardDescription className='text-white'>Access the administrative dashboard</CardDescription>
+        <Card className="rounded-2xl border border-slate-200/70 bg-white/95 shadow-xl backdrop-blur-sm border-0 border-t-4 border-blue-600">
+          <CardHeader className="space-y-2 pb-2">
+            <CardTitle className="text-left text-2xl font-semibold text-blue-700">Administrator Login</CardTitle>
+            <CardDescription className="text-left text-slate-600">Access the administrative dashboard</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2 text-white">
-                <Label htmlFor="email ">Email</Label>
+          <CardContent className="pt-4">
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-slate-700">Email</Label>
                 <Input
-                className='text-black'
+                className="h-11 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500"
                   id="email"
                   type="email"
                   placeholder="admin@university.edu"
@@ -73,11 +73,11 @@ export default function AdminLoginPage() {
                   required
                 />
               </div>
-              <div className="space-y-2 text-white">
-                <Label htmlFor="password">Password</Label>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-slate-700">Password</Label>
                 <div className="relative">
                   <Input
-                    className="text-black pr-10"
+                    className="h-11 pr-10 border-slate-300 bg-white text-slate-900 focus-visible:ring-2 focus-visible:ring-blue-500"
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={form.password}
@@ -88,20 +88,20 @@ export default function AdminLoginPage() {
                     type="button"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-white hover:bg-gray-100 text-black" disabled={loading} >
+              <Button type="submit" className="h-11 w-full bg-blue-600 text-white hover:bg-blue-700" disabled={loading} >
                 {loading ? 'Logging in...' : 'Login as Admin'}
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        <div className="mt-6 text-center ">
+        <div className="mt-6 text-center">
           <Button variant="link" onClick={() => router.push('/student/login')} className="text-blue-600">
             Student Login
           </Button>

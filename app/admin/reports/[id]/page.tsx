@@ -343,7 +343,7 @@ export default function AdminReportDetailPage() {
                   )}
                   {report.status !== 'unresolved' && report.status !== 'resolved' && (
                     <Button
-                    className="w-full bg-red-600 text-white hover:bg-red-700 hover:text-white"
+                    className="w-full bg-grey-100 text-white hover:bg-grey-400 hover:text-white"
                       onClick={() => updateStatus('unresolved')}
                       disabled={updating}
                       variant="outline"
